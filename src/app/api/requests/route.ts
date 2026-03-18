@@ -90,6 +90,13 @@ export async function POST(req: Request) {
     const role = String(req.headers.get('x-rd-role') || '').toLowerCase();
     const username = String(req.headers.get('x-rd-user') || '').trim();
 
+    if (role !== 'user' && !input.user_name) {
+      return NextResponse.json(
+        { error: 'user_name is required for manager/admin' },
+        { status: 400 },
+      );
+    }
+
     const sheets = getSheetsClient();
     const spreadsheetId = getSpreadsheetId();
     const sheetName = getRequestsSheetName();
@@ -99,7 +106,7 @@ export async function POST(req: Request) {
       timestamp,
       'web',
       // Do not allow spoofing: store authenticated username
-      username || input.user_name,
+      role === 'user' ? username : input.user_name || username,
       input.request_type,
       input.risk_code,
       input.request_text,
