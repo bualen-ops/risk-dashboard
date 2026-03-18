@@ -34,8 +34,11 @@ function mapValuesToRow(rowNumber: number, values: (string | null | undefined)[]
   });
 }
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
+    const role = String(req.headers.get('x-rd-role') || '').toLowerCase();
+    const username = String(req.headers.get('x-rd-user') || '').trim();
+
     const sheets = getSheetsClient();
     const spreadsheetId = getSpreadsheetId();
     const sheetName = getRequestsSheetName();
@@ -58,10 +61,18 @@ export async function GET() {
       .map((r, idx) => mapValuesToRow(idx + 2, r))
       .filter((r) => r.timestamp || r.request_text || r.user_name);
 
-    // newest first
-    items.sort((a, b) => b.row_number - a.row_number);
+    const scoped =
+      role === 'admin' || role === 'risk_manager'
+        ? items
+        : items.filter((r) => r.user_name === username);
 
-    return NextResponse.json({ items });
+    // newest first
+    scoped.sort((a, b) => b.row_number - a.row_number);
+
+    return NextResponse.json({
+      items: scoped,
+      me: { username, role: role || 'user' },
+    });
   } catch (e: any) {
     return NextResponse.json(
       {
@@ -76,6 +87,8 @@ export async function POST(req: Request) {
   try {
     const body = await req.json().catch(() => ({}));
     const input = createRequestSchema.parse(body);
+    const role = String(req.headers.get('x-rd-role') || '').toLowerCase();
+    const username = String(req.headers.get('x-rd-user') || '').trim();
 
     const sheets = getSheetsClient();
     const spreadsheetId = getSpreadsheetId();
@@ -85,7 +98,8 @@ export async function POST(req: Request) {
     const row = [
       timestamp,
       'web',
-      input.user_name,
+      // Do not allow spoofing: store authenticated username
+      username || input.user_name,
       input.request_type,
       input.risk_code,
       input.request_text,
@@ -102,7 +116,7 @@ export async function POST(req: Request) {
       requestBody: { values: [row] },
     });
 
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, me: { username, role: role || 'user' } });
   } catch (e: any) {
     const zerr = e instanceof z.ZodError ? e.flatten() : null;
     return NextResponse.json(

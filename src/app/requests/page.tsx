@@ -25,6 +25,7 @@ export default function RequestsPage() {
   const [items, setItems] = useState<RequestRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [me, setMe] = useState<{ username: string; role: string } | null>(null);
 
   const [filter, setFilter] = useState('');
 
@@ -46,6 +47,7 @@ export default function RequestsPage() {
       const json = await res.json();
       if (!res.ok) throw new Error(json?.error || 'Failed to load');
       setItems(Array.isArray(json.items) ? json.items : []);
+      setMe(json.me && typeof json.me === 'object' ? json.me : null);
     } catch (e: any) {
       setError(e?.message || String(e));
     } finally {
@@ -134,6 +136,12 @@ export default function RequestsPage() {
           <p className="text-sm text-zinc-600 dark:text-zinc-400">
             Реестр запросов риск‑менеджеру и ответов (Google Sheets → Requests).
           </p>
+          {me ? (
+            <p className="text-xs text-zinc-500">
+              Вы вошли как <span className="font-medium">{me.username}</span> (
+              {me.role})
+            </p>
+          ) : null}
         </header>
 
         <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-zinc-950">
@@ -171,7 +179,13 @@ export default function RequestsPage() {
                   placeholder="например, Alen"
                   value={newUserName}
                   onChange={(e) => setNewUserName(e.target.value)}
+                  disabled={me?.role === 'user'}
                 />
+                {me?.role === 'user' ? (
+                  <div className="mt-1 text-xs text-zinc-500">
+                    Для обычного пользователя имя берётся из логина.
+                  </div>
+                ) : null}
               </div>
               <div>
                 <label className="text-sm font-medium">Тип</label>
@@ -195,10 +209,14 @@ export default function RequestsPage() {
                 <button
                   className="w-full rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500 disabled:opacity-50"
                   onClick={() => void submitNew()}
-                  disabled={submitting || !newUserName.trim() || !newText.trim()}
+                  disabled={
+                    submitting ||
+                    !newText.trim() ||
+                    (me?.role !== 'user' && !newUserName.trim())
+                  }
                   title={
-                    !newUserName.trim() || !newText.trim()
-                      ? 'Заполни поля "Кто" и "Текст"'
+                    !newText.trim() || (me?.role !== 'user' && !newUserName.trim())
+                      ? 'Заполни обязательные поля'
                       : ''
                   }
                 >
@@ -281,7 +299,10 @@ export default function RequestsPage() {
                     <td className="px-4 py-3">
                       <button
                         className="rounded-lg border border-zinc-200 px-3 py-1.5 text-xs font-medium hover:bg-zinc-50 disabled:opacity-50 dark:border-white/10 dark:hover:bg-white/5"
-                        disabled={r.status === 'answered'}
+                        disabled={
+                          r.status === 'answered' ||
+                          (me?.role !== 'admin' && me?.role !== 'risk_manager')
+                        }
                         onClick={() => {
                           setAnswerRow(r);
                           setAnswerText(r.response_text || '');

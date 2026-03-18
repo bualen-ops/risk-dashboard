@@ -9,6 +9,11 @@ import { answerRequestSchema } from '@/lib/requestsSchema';
 
 export async function POST(req: Request) {
   try {
+    const role = String(req.headers.get('x-rd-role') || '').toLowerCase();
+    if (role !== 'admin' && role !== 'risk_manager') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const body = await req.json().catch(() => ({}));
     const input = answerRequestSchema.parse(body);
 

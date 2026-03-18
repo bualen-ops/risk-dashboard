@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { verifyBasicAuth } from '@/lib/webAuth';
 
 function unauthorizedResponse() {
   return new NextResponse('Authentication required', {
@@ -16,37 +17,21 @@ export function middleware(req: NextRequest) {
     return NextResponse.next();
   }
 
-  const user = process.env.BASIC_AUTH_USER || '';
-  const pass = process.env.BASIC_AUTH_PASS || '';
-
-  // If creds are not set, deny by default (safer than open access)
-  if (!user || !pass) {
+  const { ok, user } = verifyBasicAuth(req.headers.get('authorization'));
+  if (!ok || !user) {
     return unauthorizedResponse();
   }
 
-  const authHeader = req.headers.get('authorization') || '';
-  const [scheme, encoded] = authHeader.split(' ');
+  const requestHeaders = new Headers(req.headers);
+  requestHeaders.set('x-rd-user', user.username);
+  requestHeaders.set('x-rd-role', user.role);
+  if (user.displayName) requestHeaders.set('x-rd-display-name', user.displayName);
 
-  if (scheme !== 'Basic' || !encoded) {
-    return unauthorizedResponse();
-  }
-
-  let decoded = '';
-  try {
-    decoded = Buffer.from(encoded, 'base64').toString('utf8');
-  } catch {
-    return unauthorizedResponse();
-  }
-
-  const sepIdx = decoded.indexOf(':');
-  const gotUser = sepIdx >= 0 ? decoded.slice(0, sepIdx) : '';
-  const gotPass = sepIdx >= 0 ? decoded.slice(sepIdx + 1) : '';
-
-  if (gotUser !== user || gotPass !== pass) {
-    return unauthorizedResponse();
-  }
-
-  return NextResponse.next();
+  return NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
+  });
 }
 
 export const config = {
