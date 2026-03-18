@@ -33,6 +33,15 @@ export default function Home() {
             </ul>
           </div>
         </section>
+
+        <section className="flex flex-wrap gap-3">
+          <a
+            className="inline-flex items-center justify-center rounded-xl bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-black dark:hover:bg-white"
+            href="/requests"
+          >
+            Открыть «Запросы»
+          </a>
+        </section>
       </main>
     </div>
   );
