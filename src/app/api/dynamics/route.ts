@@ -23,7 +23,7 @@ export async function GET(req: Request) {
     const baseUrl = resolveUpstreamUrl();
     const token = (process.env.RISK_API_TOKEN || '').trim();
     const url = new URL(req.url);
-    const code = (url.searchParams.get('code') || '').trim();
+    const code = (url.searchParams.get('code') || '').replace(/\s+/g, ' ').trim();
 
     if (!baseUrl) {
       return NextResponse.json(
