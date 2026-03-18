@@ -21,85 +21,64 @@ function level(s: number) {
   return { label: 'Низкий', cls: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-200' };
 }
 
-export default function RisksPage() {
+const TOP_N = 25;
+
+export default function KeyRisksPage() {
   const [items, setItems] = useState<RiskRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [q, setQ] = useState('');
 
-  async function load(query: string) {
+  async function load() {
     setLoading(true);
     setError('');
     try {
-      const url = query.trim() ? `/api/risks?q=${encodeURIComponent(query.trim())}` : '/api/risks';
-      const res = await fetch(url, { cache: 'no-store' });
+      const res = await fetch('/api/risks', { cache: 'no-store' });
       const json = await res.json();
       if (!res.ok) throw new Error(json?.error || 'Failed to load');
       setItems(Array.isArray(json.items) ? json.items : []);
-    } catch (e: any) {
-      setError(e?.message || String(e));
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : String(e));
     } finally {
       setLoading(false);
     }
   }
 
   useEffect(() => {
-    void load('');
+    void load();
   }, []);
 
   const rows = useMemo(() => {
-    return items.map((r) => {
-      const s = score(r.probability, r.impact);
-      return { ...r, score: s, level: level(s) };
-    });
+    return items
+      .map((r) => ({ ...r, score: score(r.probability, r.impact), level: level(score(r.probability, r.impact)) }))
+      .sort((a, b) => b.score - a.score)
+      .slice(0, TOP_N);
   }, [items]);
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--background)' }}>
       <main className="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-8">
         <header className="flex flex-col gap-1">
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Реестр рисков</h1>
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Ключевые риски</h1>
           <p className="text-sm text-slate-600">
-            Данные из MS SQL (PERISCOPE): rm.Risk + последний StateRecord.
+            Топ {TOP_N} рисков по приоритету (score = P × I). Данные из реестра.
           </p>
         </header>
 
-        <section className="periscope-card rounded-2xl p-6 shadow-sm">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
-            <div className="flex-1">
-              <label className="text-sm font-medium text-slate-700">Поиск</label>
-              <input
-                className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-[var(--periscope-accent)] focus:ring-offset-1"
-                placeholder="код, описание, владелец, статус…"
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-              />
-            </div>
-            <button
-              className="periscope-btn-primary rounded-xl px-4 py-2 text-sm font-medium disabled:opacity-50"
-              onClick={() => void load(q)}
-              disabled={loading}
-            >
-              Найти
-            </button>
+        {error ? (
+          <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
+            {error}
           </div>
-
-          {error ? (
-            <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
-              {error}
-            </div>
-          ) : null}
-        </section>
+        ) : null}
 
         <section className="periscope-card overflow-hidden rounded-2xl shadow-sm">
           <div className="border-b border-slate-200 px-6 py-4 text-sm text-slate-600">
-            {loading ? 'Загрузка…' : `Рисков: ${rows.length}`}
+            {loading ? 'Загрузка…' : `Показано: ${rows.length} из ${items.length}`}
           </div>
-
           <div className="overflow-auto">
             <table className="min-w-[1100px] w-full text-left text-sm">
               <thead className="sticky top-0 bg-slate-50 text-xs uppercase text-slate-500">
                 <tr>
+                  <th className="px-4 py-3">#</th>
                   <th className="px-4 py-3">Код</th>
                   <th className="px-4 py-3">Уровень</th>
                   <th className="px-4 py-3">P</th>
@@ -111,8 +90,9 @@ export default function RisksPage() {
                 </tr>
               </thead>
               <tbody>
-                {rows.map((r) => (
+                {rows.map((r, idx) => (
                   <tr key={r.risk_code} className="border-t border-slate-100 align-top">
+                    <td className="px-4 py-3 text-slate-500">{idx + 1}</td>
                     <td className="px-4 py-3 font-medium">{r.risk_code}</td>
                     <td className="px-4 py-3">
                       <span className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${r.level.cls}`}>
@@ -129,7 +109,7 @@ export default function RisksPage() {
                 ))}
                 {!loading && rows.length === 0 ? (
                   <tr>
-                    <td className="px-6 py-10 text-sm text-slate-500" colSpan={8}>
+                    <td className="px-6 py-10 text-sm text-slate-500" colSpan={9}>
                       Нет данных.
                     </td>
                   </tr>
@@ -142,4 +122,3 @@ export default function RisksPage() {
     </div>
   );
 }
-

@@ -186,49 +186,21 @@ export default function DynamicsPage() {
   }, [code, items]);
 
   return (
-    <div className="min-h-screen bg-zinc-50 text-zinc-950 dark:bg-black dark:text-zinc-50">
-      <main className="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-12">
-        <header className="flex flex-col gap-2">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <h1 className="text-2xl font-semibold tracking-tight">Динамика риска</h1>
-            <div className="flex flex-wrap gap-2">
-              <a
-                className="inline-flex w-fit items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium hover:bg-zinc-50 dark:border-white/10 dark:bg-zinc-950 dark:hover:bg-white/5"
-                href="/map"
-              >
-                Карта
-              </a>
-              <a
-                className="inline-flex w-fit items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium hover:bg-zinc-50 dark:border-white/10 dark:bg-zinc-950 dark:hover:bg-white/5"
-                href="/risks"
-              >
-                Реестр
-              </a>
-              <a
-                className="inline-flex w-fit items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium hover:bg-zinc-50 dark:border-white/10 dark:bg-zinc-950 dark:hover:bg-white/5"
-                href="/requests"
-              >
-                Запросы
-              </a>
-              <a
-                className="inline-flex w-fit items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium hover:bg-zinc-50 dark:border-white/10 dark:bg-zinc-950 dark:hover:bg-white/5"
-                href="/logout"
-              >
-                Выйти
-              </a>
-            </div>
-          </div>
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">
+    <div className="min-h-screen" style={{ background: 'var(--background)' }}>
+      <main className="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-8">
+        <header className="flex flex-col gap-1">
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Динамика риска</h1>
+          <p className="text-sm text-slate-600">
             Введите код риска и получите историю изменений Probability/Impact/Score.
           </p>
         </header>
 
-        <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-zinc-950">
+        <section className="periscope-card rounded-2xl p-6 shadow-sm">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
             <div className="flex-1">
-              <label className="text-sm font-medium">Код риска</label>
+              <label className="text-sm font-medium text-slate-700">Код риска</label>
               <input
-                className="mt-1 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-zinc-300 dark:border-white/10 dark:bg-zinc-900 dark:focus:ring-white/20"
+                className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-[var(--periscope-accent)] focus:ring-offset-1"
                 placeholder="например: МП 8 или K-06…"
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
@@ -238,7 +210,7 @@ export default function DynamicsPage() {
               />
             </div>
             <button
-              className="rounded-xl bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-50 dark:bg-zinc-100 dark:text-black dark:hover:bg-white"
+              className="periscope-btn-primary rounded-xl px-4 py-2 text-sm font-medium disabled:opacity-50"
               onClick={() => void load()}
               disabled={loading}
             >
@@ -262,13 +234,13 @@ export default function DynamicsPage() {
           </div>
         </section>
 
-        <section className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm dark:border-white/10 dark:bg-zinc-950">
-          <div className="border-b border-zinc-200 px-6 py-4 text-sm text-zinc-600 dark:border-white/10 dark:text-zinc-400">
+        <section className="periscope-card overflow-hidden rounded-2xl shadow-sm">
+          <div className="border-b border-slate-200 px-6 py-4 text-sm text-slate-600">
             История
           </div>
           <div className="overflow-auto">
             <table className="min-w-[900px] w-full text-left text-sm">
-              <thead className="sticky top-0 bg-zinc-50 text-xs uppercase text-zinc-500 dark:bg-zinc-950 dark:text-zinc-400">
+              <thead className="sticky top-0 bg-slate-50 text-xs uppercase text-slate-500">
                 <tr>
                   <th className="px-4 py-3">Дата</th>
                   <th className="px-4 py-3">P</th>
@@ -278,7 +250,7 @@ export default function DynamicsPage() {
               </thead>
               <tbody>
                 {items.map((r, idx) => (
-                  <tr key={`${r.ts}-${idx}`} className="border-t border-zinc-100 dark:border-white/10">
+                  <tr key={`${r.ts}-${idx}`} className="border-t border-slate-100">
                     <td className="px-4 py-3">{fmtDate(r.ts)}</td>
                     <td className="px-4 py-3">{Math.round(r.probability * 10) / 10}</td>
                     <td className="px-4 py-3">{Math.round(r.impact * 10) / 10}</td>
@@ -287,7 +259,7 @@ export default function DynamicsPage() {
                 ))}
                 {!loading && items.length === 0 ? (
                   <tr>
-                    <td className="px-6 py-10 text-sm text-zinc-500" colSpan={4}>
+                    <td className="px-6 py-10 text-sm text-slate-500" colSpan={4}>
                       Нет данных.
                     </td>
                   </tr>

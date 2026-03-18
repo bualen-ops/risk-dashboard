@@ -51,8 +51,9 @@ export async function GET(req: Request) {
 
     const json = await res.json().catch(() => ({}));
     if (!res.ok) {
+      const msg = json?.error || json?.message || (typeof json?.details === 'string' ? json.details : null) || `Upstream error (${res.status})`;
       return NextResponse.json(
-        { error: json?.error || `Upstream error (${res.status})` },
+        { error: msg, upstream: res.status, details: json?.errorMessage || json?.details },
         { status: 502 },
       );
     }

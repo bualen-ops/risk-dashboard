@@ -305,52 +305,30 @@ export default function MapPage() {
   }, [points.filtered]);
 
   return (
-    <div className="min-h-screen bg-zinc-50 text-zinc-950 dark:bg-black dark:text-zinc-50">
-      <main className="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-12">
-        <header className="flex flex-col gap-2">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <h1 className="text-2xl font-semibold tracking-tight">Карта рисков</h1>
-            <div className="flex flex-wrap gap-2">
-              <a
-                className="inline-flex w-fit items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium hover:bg-zinc-50 dark:border-white/10 dark:bg-zinc-950 dark:hover:bg-white/5"
-                href="/risks"
-              >
-                Реестр
-              </a>
-              <a
-                className="inline-flex w-fit items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium hover:bg-zinc-50 dark:border-white/10 dark:bg-zinc-950 dark:hover:bg-white/5"
-                href="/requests"
-              >
-                Запросы
-              </a>
-              <a
-                className="inline-flex w-fit items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium hover:bg-zinc-50 dark:border-white/10 dark:bg-zinc-950 dark:hover:bg-white/5"
-                href="/logout"
-              >
-                Выйти
-              </a>
-            </div>
-          </div>
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">
+    <div className="min-h-screen" style={{ background: 'var(--background)' }}>
+      <main className="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-8">
+        <header className="flex flex-col gap-1">
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Карта рисков</h1>
+          <p className="text-sm text-slate-600">
             Probability × Impact по последнему состоянию риска. Наведи мышь на точку, чтобы увидеть детали.
           </p>
         </header>
 
-        <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-zinc-950">
+        <section className="periscope-card rounded-2xl p-6 shadow-sm">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
             <div className="flex-1">
-              <label className="text-sm font-medium">Поиск</label>
+              <label className="text-sm font-medium text-slate-700">Поиск</label>
               <input
-                className="mt-1 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-zinc-300 dark:border-white/10 dark:bg-zinc-900 dark:focus:ring-white/20"
+                className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-[var(--periscope-accent)] focus:ring-offset-1"
                 placeholder="код или название…"
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
               />
             </div>
             <div className="w-full sm:w-[220px]">
-              <label className="text-sm font-medium">Мин. score</label>
+              <label className="text-sm font-medium text-slate-700">Мин. score</label>
               <input
-                className="mt-1 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-zinc-300 dark:border-white/10 dark:bg-zinc-900 dark:focus:ring-white/20"
+                className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-[var(--periscope-accent)] focus:ring-offset-1"
                 type="number"
                 min={0}
                 step={1}
@@ -359,7 +337,7 @@ export default function MapPage() {
               />
             </div>
             <div className="flex items-center gap-3 sm:pb-1">
-              <label className="inline-flex items-center gap-2 text-sm">
+              <label className="inline-flex items-center gap-2 text-sm text-slate-700">
                 <input
                   type="checkbox"
                   checked={showLabels}
@@ -368,9 +346,9 @@ export default function MapPage() {
                 Показывать коды
               </label>
               <div className="flex items-center gap-2">
-                <span className="text-xs text-zinc-600 dark:text-zinc-400">до</span>
+                <span className="text-xs text-slate-600">до</span>
                 <input
-                  className="w-[76px] rounded-xl border border-zinc-200 bg-white px-2 py-2 text-sm outline-none focus:ring-2 focus:ring-zinc-300 dark:border-white/10 dark:bg-zinc-900 dark:focus:ring-white/20"
+                  className="w-[76px] rounded-xl border border-slate-300 bg-white px-2 py-2 text-sm outline-none focus:ring-2 focus:ring-[var(--periscope-accent)] focus:ring-offset-1"
                   type="number"
                   min={0}
                   max={120}
@@ -382,7 +360,7 @@ export default function MapPage() {
               </div>
             </div>
             <button
-              className="rounded-xl bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-50 dark:bg-zinc-100 dark:text-black dark:hover:bg-white"
+              className="periscope-btn-primary rounded-xl px-4 py-2 text-sm font-medium disabled:opacity-50"
               onClick={() => void load()}
               disabled={loading}
             >
@@ -391,22 +369,22 @@ export default function MapPage() {
           </div>
 
           {error ? (
-            <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-500/30 dark:bg-red-950/40 dark:text-red-200">
+            <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
               {error}
             </div>
           ) : null}
 
-          <div className="mt-4 flex flex-wrap gap-2 text-xs text-zinc-600 dark:text-zinc-400">
-            <span className="rounded-full border border-zinc-200 px-2 py-1 dark:border-white/10">
+          <div className="mt-4 flex flex-wrap gap-2 text-xs text-slate-600">
+            <span className="rounded-full border border-slate-200 px-2 py-1">
               Всего: {loading ? '…' : stats.total}
             </span>
-            <span className="rounded-full border border-zinc-200 px-2 py-1 dark:border-white/10">
+            <span className="rounded-full border border-slate-200 px-2 py-1">
               Высокий: {loading ? '…' : stats.hi}
             </span>
-            <span className="rounded-full border border-zinc-200 px-2 py-1 dark:border-white/10">
+            <span className="rounded-full border border-slate-200 px-2 py-1">
               Средний: {loading ? '…' : stats.mid}
             </span>
-            <span className="rounded-full border border-zinc-200 px-2 py-1 dark:border-white/10">
+            <span className="rounded-full border border-slate-200 px-2 py-1">
               Низкий: {loading ? '…' : stats.low}
             </span>
           </div>
@@ -415,9 +393,9 @@ export default function MapPage() {
         <section className="grid gap-4 lg:grid-cols-[1fr_340px]">
           <div
             ref={wrapRef}
-            className="relative overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm dark:border-white/10 dark:bg-zinc-950"
+            className="periscope-card relative overflow-hidden rounded-2xl shadow-sm"
           >
-            <div className="border-b border-zinc-200 px-6 py-4 text-sm text-zinc-600 dark:border-white/10 dark:text-zinc-400">
+            <div className="border-b border-slate-200 px-6 py-4 text-sm text-slate-600">
               {loading ? 'Загрузка…' : 'Карта (Probability → / Impact ↑)'}
             </div>
             <div className="p-4">
@@ -448,8 +426,8 @@ export default function MapPage() {
             ) : null}
           </div>
 
-          <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-zinc-950">
-            <h2 className="text-sm font-semibold">Топ по score</h2>
+          <div className="periscope-card rounded-2xl p-6 shadow-sm">
+            <h2 className="text-sm font-semibold text-slate-900">Топ по score</h2>
             <div className="mt-3 space-y-2">
               {points.filtered
                 .map((p) => ({ ...p, score: p.probability * p.impact }))
@@ -458,26 +436,26 @@ export default function MapPage() {
                 .map((p) => (
                   <div
                     key={p.risk_code}
-                    className="rounded-xl border border-zinc-200 px-3 py-2 text-sm dark:border-white/10"
+                    className="rounded-xl border border-slate-200 px-3 py-2 text-sm"
                   >
                     <div className="flex items-center justify-between gap-3">
-                      <div className="font-medium">{p.risk_code}</div>
-                      <div className="text-zinc-600 dark:text-zinc-400">
+                      <div className="font-medium text-slate-900">{p.risk_code}</div>
+                      <div className="text-slate-600">
                         {Math.round(p.score * 10) / 10}
                       </div>
                     </div>
-                    <div className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
+                    <div className="mt-1 text-xs text-slate-600">
                       P {Math.round(p.probability * 10) / 10} • I {Math.round(p.impact * 10) / 10}
                     </div>
                     {p.risk_name ? (
-                      <div className="mt-1 text-xs text-zinc-500 dark:text-zinc-500">
+                      <div className="mt-1 text-xs text-slate-500">
                         {p.risk_name}
                       </div>
                     ) : null}
                   </div>
                 ))}
               {!loading && points.filtered.length === 0 ? (
-                <div className="text-sm text-zinc-500">Нет данных.</div>
+                <div className="text-sm text-slate-500">Нет данных.</div>
               ) : null}
             </div>
           </div>

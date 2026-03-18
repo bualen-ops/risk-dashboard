@@ -30,7 +30,7 @@ export default function RequestsPage() {
   const [filter, setFilter] = useState('');
 
   const [newUserName, setNewUserName] = useState('');
-  const [newType, setNewType] = useState('WEB');
+  const [newType, setNewType] = useState<string>('WEB');
   const [newRiskCode, setNewRiskCode] = useState('');
   const [newText, setNewText] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -129,43 +129,59 @@ export default function RequestsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50 text-zinc-950 dark:bg-black dark:text-zinc-50">
-      <main className="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-12">
-        <header className="flex flex-col gap-2">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <h1 className="text-2xl font-semibold tracking-tight">Запросы</h1>
-            <a
-              className="inline-flex w-fit items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium hover:bg-zinc-50 dark:border-white/10 dark:bg-zinc-950 dark:hover:bg-white/5"
-              href="/logout"
-            >
-              Выйти
-            </a>
-          </div>
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">
+    <div className="min-h-screen" style={{ background: 'var(--background)' }}>
+      <main className="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-8">
+        <header className="flex flex-col gap-1">
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Запросы</h1>
+          <p className="text-sm text-slate-600">
             Реестр запросов риск‑менеджеру и ответов (Google Sheets → Requests).
           </p>
           {me ? (
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-slate-500">
               Вы вошли как <span className="font-medium">{me.username}</span> (
               {me.role})
             </p>
           ) : null}
         </header>
 
-        <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-zinc-950">
+        <section className="periscope-card rounded-2xl p-6 shadow-sm">
           <div className="flex flex-col gap-4">
+            <div className="flex flex-wrap gap-2">
+              <span className="text-sm font-medium text-slate-600">Быстро:</span>
+              <button
+                type="button"
+                className="rounded-xl border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-800 hover:bg-emerald-100"
+                onClick={() => setNewType('REPORT_NEW')}
+              >
+                ➕ Новый риск
+              </button>
+              <button
+                type="button"
+                className="rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-sm font-medium text-amber-800 hover:bg-amber-100"
+                onClick={() => setNewType('EXCLUDE_RISK')}
+              >
+                ➖ Исключить риск
+              </button>
+              <button
+                type="button"
+                className="rounded-xl border border-slate-300 bg-slate-100 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-200"
+                onClick={() => setNewType('WEB')}
+              >
+                💬 Сообщение
+              </button>
+            </div>
             <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
               <div className="flex-1">
-                <label className="text-sm font-medium">Фильтр</label>
+                <label className="text-sm font-medium text-slate-700">Фильтр</label>
                 <input
-                  className="mt-1 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-zinc-300 dark:border-white/10 dark:bg-zinc-900 dark:focus:ring-white/20"
+                  className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-[var(--periscope-accent)] focus:ring-offset-1"
                   placeholder="по тексту, коду, статусу..."
                   value={filter}
                   onChange={(e) => setFilter(e.target.value)}
                 />
               </div>
               <button
-                className="rounded-xl bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-50 dark:bg-zinc-100 dark:text-black dark:hover:bg-white"
+                className="periscope-btn-primary rounded-xl px-4 py-2 text-sm font-medium disabled:opacity-50"
                 onClick={() => void load()}
                 disabled={loading}
               >
@@ -174,40 +190,43 @@ export default function RequestsPage() {
             </div>
 
             {error ? (
-              <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-500/30 dark:bg-red-950/40 dark:text-red-200">
+              <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
                 {error}
               </div>
             ) : null}
 
             <div className="grid gap-3 md:grid-cols-4">
               <div>
-                <label className="text-sm font-medium">Кто</label>
+                <label className="text-sm font-medium text-slate-700">Кто</label>
                 <input
-                  className="mt-1 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-zinc-300 dark:border-white/10 dark:bg-zinc-900 dark:focus:ring-white/20"
+                  className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-[var(--periscope-accent)] focus:ring-offset-1"
                   placeholder="например, Alen"
                   value={newUserName}
                   onChange={(e) => setNewUserName(e.target.value)}
                   disabled={me?.role === 'user'}
                 />
                 {me?.role === 'user' ? (
-                  <div className="mt-1 text-xs text-zinc-500">
+                  <div className="mt-1 text-xs text-slate-500">
                     Для обычного пользователя имя берётся из логина.
                   </div>
                 ) : null}
               </div>
               <div>
-                <label className="text-sm font-medium">Тип</label>
-                <input
-                  className="mt-1 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-zinc-300 dark:border-white/10 dark:bg-zinc-900 dark:focus:ring-white/20"
-                  placeholder="WEB / REPORT_NEW / ..."
+                <label className="text-sm font-medium text-slate-700">Тип запроса</label>
+                <select
+                  className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-[var(--periscope-accent)] focus:ring-offset-1"
                   value={newType}
                   onChange={(e) => setNewType(e.target.value)}
-                />
+                >
+                  <option value="WEB">💬 Сообщение риск-менеджеру</option>
+                  <option value="REPORT_NEW">➕ Новый риск</option>
+                  <option value="EXCLUDE_RISK">➖ Исключить риск</option>
+                </select>
               </div>
               <div>
-                <label className="text-sm font-medium">Код риска</label>
+                <label className="text-sm font-medium text-slate-700">Код риска</label>
                 <input
-                  className="mt-1 w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-zinc-300 dark:border-white/10 dark:bg-zinc-900 dark:focus:ring-white/20"
+                  className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-[var(--periscope-accent)] focus:ring-offset-1"
                   placeholder="например, 5 или МП 5"
                   value={newRiskCode}
                   onChange={(e) => setNewRiskCode(e.target.value)}
@@ -215,7 +234,7 @@ export default function RequestsPage() {
               </div>
               <div className="flex items-end">
                 <button
-                  className="w-full rounded-xl bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500 disabled:opacity-50"
+                  className="periscope-btn-accent w-full rounded-xl px-4 py-2 text-sm font-medium disabled:opacity-50"
                   onClick={() => void submitNew()}
                   disabled={
                     submitting ||
@@ -232,9 +251,9 @@ export default function RequestsPage() {
                 </button>
               </div>
               <div className="md:col-span-4">
-                <label className="text-sm font-medium">Текст</label>
+                <label className="text-sm font-medium text-slate-700">Текст</label>
                 <textarea
-                  className="mt-1 min-h-[90px] w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-zinc-300 dark:border-white/10 dark:bg-zinc-900 dark:focus:ring-white/20"
+                  className="mt-1 min-h-[90px] w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-[var(--periscope-accent)] focus:ring-offset-1"
                   placeholder="Опиши запрос риск‑менеджеру"
                   value={newText}
                   onChange={(e) => setNewText(e.target.value)}
@@ -244,14 +263,14 @@ export default function RequestsPage() {
           </div>
         </section>
 
-        <section className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm dark:border-white/10 dark:bg-zinc-950">
-          <div className="border-b border-zinc-200 px-6 py-4 text-sm text-zinc-600 dark:border-white/10 dark:text-zinc-400">
+        <section className="periscope-card overflow-hidden rounded-2xl shadow-sm">
+          <div className="border-b border-slate-200 px-6 py-4 text-sm text-slate-600">
             {loading ? 'Загрузка…' : `Записей: ${filtered.length}`}
           </div>
 
           <div className="overflow-auto">
             <table className="min-w-[980px] w-full text-left text-sm">
-              <thead className="sticky top-0 bg-zinc-50 text-xs uppercase text-zinc-500 dark:bg-zinc-950 dark:text-zinc-400">
+              <thead className="sticky top-0 bg-slate-50 text-xs uppercase text-slate-500">
                 <tr>
                   <th className="px-4 py-3">#</th>
                   <th className="px-4 py-3">Время</th>
@@ -268,9 +287,9 @@ export default function RequestsPage() {
                 {filtered.map((r) => (
                   <tr
                     key={r.row_number}
-                    className="border-t border-zinc-100 align-top dark:border-white/10"
+                    className="border-t border-slate-100 align-top"
                   >
-                    <td className="px-4 py-3 text-zinc-500">{r.row_number}</td>
+                    <td className="px-4 py-3 text-slate-500">{r.row_number}</td>
                     <td className="px-4 py-3 whitespace-nowrap">
                       {formatTs(r.timestamp)}
                     </td>
@@ -292,21 +311,21 @@ export default function RequestsPage() {
                         {r.status || '—'}
                       </span>
                     </td>
-                    <td className="px-4 py-3 max-w-[340px] whitespace-pre-wrap text-zinc-700 dark:text-zinc-300">
+                    <td className="px-4 py-3 max-w-[340px] whitespace-pre-wrap text-slate-700">
                       {r.response_text ? (
                         <>
                           <div>{r.response_text}</div>
-                          <div className="mt-1 text-xs text-zinc-500">
+                          <div className="mt-1 text-xs text-slate-500">
                             {formatTs(r.response_at)}
                           </div>
                         </>
                       ) : (
-                        <span className="text-zinc-400">—</span>
+                        <span className="text-slate-400">—</span>
                       )}
                     </td>
                     <td className="px-4 py-3">
                       <button
-                        className="rounded-lg border border-zinc-200 px-3 py-1.5 text-xs font-medium hover:bg-zinc-50 disabled:opacity-50 dark:border-white/10 dark:hover:bg-white/5"
+                        className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-medium hover:bg-slate-50 disabled:opacity-50 "
                         disabled={
                           r.status === 'answered' ||
                           (me?.role !== 'admin' && me?.role !== 'risk_manager')
@@ -323,7 +342,7 @@ export default function RequestsPage() {
                 ))}
                 {!loading && filtered.length === 0 ? (
                   <tr>
-                    <td className="px-6 py-10 text-sm text-zinc-500" colSpan={9}>
+                    <td className="px-6 py-10 text-sm text-slate-500" colSpan={9}>
                       Нет записей.
                     </td>
                   </tr>
@@ -335,18 +354,18 @@ export default function RequestsPage() {
 
         {answerRow ? (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-6">
-            <div className="w-full max-w-xl rounded-2xl border border-zinc-200 bg-white p-6 shadow-xl dark:border-white/10 dark:bg-zinc-950">
+            <div className="periscope-card w-full max-w-xl rounded-2xl p-6 shadow-xl">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <div className="text-sm text-zinc-500">
+                  <div className="text-sm text-slate-500">
                     Ответ на запрос #{answerRow.row_number}
                   </div>
-                  <div className="mt-1 text-sm text-zinc-700 dark:text-zinc-300">
+                  <div className="mt-1 text-sm text-slate-700">
                     {answerRow.request_text}
                   </div>
                 </div>
                 <button
-                  className="rounded-lg px-2 py-1 text-sm text-zinc-500 hover:bg-zinc-100 dark:hover:bg-white/10"
+                  className="rounded-lg px-2 py-1 text-sm text-slate-500 hover:bg-slate-100"
                   onClick={() => setAnswerRow(null)}
                 >
                   ✕
@@ -354,7 +373,7 @@ export default function RequestsPage() {
               </div>
 
               <textarea
-                className="mt-4 min-h-[120px] w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-zinc-300 dark:border-white/10 dark:bg-zinc-900 dark:focus:ring-white/20"
+                className="mt-4 min-h-[120px] w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-[var(--periscope-accent)] focus:ring-offset-1"
                 placeholder="Текст ответа"
                 value={answerText}
                 onChange={(e) => setAnswerText(e.target.value)}
@@ -362,13 +381,13 @@ export default function RequestsPage() {
 
               <div className="mt-4 flex gap-2">
                 <button
-                  className="flex-1 rounded-xl border border-zinc-200 px-4 py-2 text-sm font-medium hover:bg-zinc-50 dark:border-white/10 dark:hover:bg-white/5"
+                  className="flex-1 rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium hover:bg-slate-50"
                   onClick={() => setAnswerRow(null)}
                 >
                   Отмена
                 </button>
                 <button
-                  className="flex-1 rounded-xl bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-50 dark:bg-zinc-100 dark:text-black dark:hover:bg-white"
+                  className="periscope-btn-primary flex-1 rounded-xl px-4 py-2 text-sm font-medium disabled:opacity-50"
                   disabled={answerSubmitting || !answerText.trim()}
                   onClick={() => void submitAnswer()}
                 >

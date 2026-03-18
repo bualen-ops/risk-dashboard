@@ -20,15 +20,15 @@ export default function LogoutPage() {
   }, [host]);
 
   return (
-    <div className="min-h-screen bg-zinc-50 text-zinc-950 dark:bg-black dark:text-zinc-50">
+    <div className="min-h-screen" style={{ background: 'var(--background)' }}>
       <main className="mx-auto flex max-w-xl flex-col gap-4 px-6 py-16">
-        <h1 className="text-2xl font-semibold tracking-tight">Выход…</h1>
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">
+        <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Выход…</h1>
+        <p className="text-sm text-slate-600">
           Если браузер не спросит логин/пароль заново, открой сайт в режиме
           инкогнито или очисти сохранённые данные для этого домена.
         </p>
         <a
-          className="inline-flex w-fit items-center justify-center rounded-xl bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-zinc-100 dark:text-black dark:hover:bg-white"
+          className="periscope-btn-primary inline-flex w-fit items-center justify-center rounded-xl px-4 py-2 text-sm font-medium"
           href="/"
         >
           На главную
