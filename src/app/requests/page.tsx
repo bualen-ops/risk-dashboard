@@ -132,7 +132,15 @@ export default function RequestsPage() {
     <div className="min-h-screen bg-zinc-50 text-zinc-950 dark:bg-black dark:text-zinc-50">
       <main className="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-12">
         <header className="flex flex-col gap-2">
-          <h1 className="text-2xl font-semibold tracking-tight">Запросы</h1>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <h1 className="text-2xl font-semibold tracking-tight">Запросы</h1>
+            <a
+              className="inline-flex w-fit items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium hover:bg-zinc-50 dark:border-white/10 dark:bg-zinc-950 dark:hover:bg-white/5"
+              href="/logout"
+            >
+              Выйти
+            </a>
+          </div>
           <p className="text-sm text-zinc-600 dark:text-zinc-400">
             Реестр запросов риск‑менеджеру и ответов (Google Sheets → Requests).
           </p>
