@@ -1,8 +1,10 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Map as MapIcon } from 'lucide-react';
+import { Map as MapIcon, List, ChevronDown, ChevronUp } from 'lucide-react';
 import type { MapPoint } from '@/lib/mapSchema';
+
+const MOBILE_BREAKPOINT = 480;
 
 function level(score: number) {
   if (score >= 16) return { label: 'Высокий', dot: '#ef4444' }; // red-500
@@ -34,6 +36,8 @@ export default function MapPage() {
   const [hover, setHover] = useState<DrawPoint | null>(null);
   const [showLabels, setShowLabels] = useState(true);
   const [maxLabels, setMaxLabels] = useState(28);
+  const [showCanvasOnMobile, setShowCanvasOnMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   async function load() {
     setLoading(true);
@@ -56,6 +60,13 @@ export default function MapPage() {
   useEffect(() => {
     void load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    const check = () => setIsMobile(typeof window !== 'undefined' && window.innerWidth < MOBILE_BREAKPOINT);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
   }, []);
 
   const points = useMemo(() => {
@@ -278,6 +289,18 @@ export default function MapPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Когда на мобиле открыли карту — перерисовать после появления размеров
+  useEffect(() => {
+    if (!isMobile || !showCanvasOnMobile) return;
+    const t = requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        mappedRef.current = draw() || [];
+      });
+    });
+    return () => cancelAnimationFrame(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMobile, showCanvasOnMobile]);
+
   function findPointAt(clientX: number, clientY: number): DrawPoint | null {
     const canvas = canvasRef.current;
     if (!canvas) return null;
@@ -417,10 +440,67 @@ export default function MapPage() {
           </div>
         </section>
 
-        <section className="grid gap-4 lg:grid-cols-[1fr_340px]">
+        {/* На мобиле: сначала читаемый список, карта — по кнопке */}
+        {isMobile ? (
+          <section className="flex flex-col gap-4">
+            <div className="periscope-card rounded-2xl p-4 shadow-sm">
+              <h2 className="flex items-center gap-2 text-base font-semibold text-slate-900">
+                <List className="h-5 w-5 text-[var(--periscope-primary)]" aria-hidden />
+                Список рисков (P × I)
+              </h2>
+              <p className="mt-1 text-xs text-slate-500">
+                Отсортировано по приоритету. Удобно листать на телефоне.
+              </p>
+              <div className="overflow-auto max-h-[60vh] space-y-2 pr-1">
+                {(loading ? [] : [...points.filtered].sort((a, b) => b.probability * b.impact - a.probability * a.impact).slice(0, 80)).map((p) => {
+                  const s = p.probability * p.impact;
+                  const lev = level(s);
+                  return (
+                    <div
+                      key={p.risk_code}
+                      className="flex items-start gap-3 rounded-xl border border-slate-200 bg-white p-3 text-left"
+                    >
+                      <span
+                        className="mt-0.5 h-3 w-3 flex-shrink-0 rounded-full"
+                        style={{ backgroundColor: lev.dot }}
+                        aria-hidden
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="font-semibold text-slate-900">{p.risk_code}</span>
+                          <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${s >= 16 ? 'bg-red-100 text-red-800' : s >= 9 ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}`}>
+                            {lev.label}
+                          </span>
+                        </div>
+                        <div className="mt-1 text-sm text-slate-600">
+                          P {Math.round(p.probability * 10) / 10} · I {Math.round(p.impact * 10) / 10} · Score {Math.round(s * 10) / 10}
+                        </div>
+                        {p.risk_name ? <div className="mt-1 text-xs text-slate-500 line-clamp-2">{p.risk_name}</div> : null}
+                      </div>
+                    </div>
+                  );
+                })}
+                {!loading && points.filtered.length === 0 ? (
+                  <div className="py-8 text-center text-sm text-slate-500">Нет данных</div>
+                ) : null}
+              </div>
+            </div>
+
+            <button
+              type="button"
+              className="flex items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white py-3 text-sm font-medium text-slate-700 shadow-sm active:bg-slate-50"
+              onClick={() => setShowCanvasOnMobile((v) => !v)}
+            >
+              {showCanvasOnMobile ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+              {showCanvasOnMobile ? 'Скрыть карту' : 'Показать карту'}
+            </button>
+          </section>
+        ) : null}
+
+        <section className={`grid gap-4 ${isMobile ? '' : 'lg:grid-cols-[1fr_340px]'}`}>
           <div
             ref={wrapRef}
-            className="periscope-card relative overflow-hidden rounded-2xl shadow-sm"
+            className={`periscope-card relative overflow-hidden rounded-2xl shadow-sm ${isMobile && !showCanvasOnMobile ? 'hidden' : ''}`}
           >
             <div className="border-b border-slate-200 px-6 py-4 text-sm text-slate-600">
               {loading ? 'Загрузка…' : 'Карта (Probability → / Impact ↑)'}
