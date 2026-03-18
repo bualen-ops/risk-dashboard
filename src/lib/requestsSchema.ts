@@ -16,7 +16,10 @@ export const requestRowSchema = z.object({
 export type RequestRow = z.infer<typeof requestRowSchema>;
 
 export const createRequestSchema = z.object({
-  user_name: z.string().trim().min(1).optional(),
+  user_name: z.preprocess(
+    (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
+    z.string().trim().min(1).optional(),
+  ),
   request_type: z.string().trim().min(1).default('WEB'),
   risk_code: z.string().trim().default(''),
   request_text: z.string().trim().min(1),
