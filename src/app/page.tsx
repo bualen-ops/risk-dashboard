@@ -1,7 +1,7 @@
 export default function Home() {
   return (
     <div className="min-h-screen" style={{ background: 'var(--background)' }}>
-      <main className="mx-auto flex max-w-4xl flex-col gap-8 px-6 py-12">
+      <main className="mx-auto flex max-w-4xl flex-col gap-8 px-4 py-6 sm:px-6 sm:py-12">
         <header className="flex flex-col gap-3">
           <p className="text-sm font-medium text-slate-600">
             Информационная система контроля проектов

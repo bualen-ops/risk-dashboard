@@ -306,7 +306,7 @@ export default function MapPage() {
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--background)' }}>
-      <main className="mx-auto flex max-w-6xl flex-col gap-6 px-6 py-8">
+      <main className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-6 sm:px-6 sm:py-8">
         <header className="flex flex-col gap-1">
           <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Карта рисков</h1>
           <p className="text-sm text-slate-600">
