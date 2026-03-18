@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useRef, useState } from 'react';
+import { LineChart } from 'lucide-react';
 import type { DynamicsPoint } from '@/lib/dynamicsSchema';
 
 function clamp(n: number, a: number, b: number) {
@@ -189,7 +190,10 @@ export default function DynamicsPage() {
     <div className="min-h-screen" style={{ background: 'var(--background)' }}>
       <main className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-6 sm:px-6 sm:py-8">
         <header className="flex flex-col gap-1">
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Динамика риска</h1>
+          <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight text-slate-900">
+            <LineChart className="h-7 w-7 text-[var(--periscope-accent)]" aria-hidden />
+            Динамика риска
+          </h1>
           <p className="text-sm text-slate-600">
             Введите код риска и получите историю изменений Probability/Impact/Score.
           </p>

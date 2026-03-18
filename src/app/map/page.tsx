@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { Map as MapIcon } from 'lucide-react';
 import type { MapPoint } from '@/lib/mapSchema';
 
 function level(score: number) {
@@ -88,14 +89,14 @@ export default function MapPage() {
     return 'rgba(16,185,129,0.14)'; // emerald
   }
 
-  function drawLabel(ctx: CanvasRenderingContext2D, text: string, x: number, y: number) {
+  function drawLabel(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, fontSize: number) {
     ctx.save();
-    ctx.font = '11px ui-sans-serif, system-ui, -apple-system';
+    ctx.font = `${fontSize}px ui-sans-serif, system-ui, -apple-system, sans-serif`;
     ctx.textBaseline = 'middle';
-    ctx.lineWidth = 3.5;
-    ctx.strokeStyle = 'rgba(0,0,0,0.75)';
+    ctx.lineWidth = Math.max(2, fontSize * 0.3);
+    ctx.strokeStyle = 'rgba(0,0,0,0.8)';
     ctx.strokeText(text, x, y);
-    ctx.fillStyle = 'rgba(255,255,255,0.88)';
+    ctx.fillStyle = 'rgba(255,255,255,0.95)';
     ctx.fillText(text, x, y);
     ctx.restore();
   }
@@ -106,8 +107,11 @@ export default function MapPage() {
     if (!canvas || !wrap) return;
 
     const rect = wrap.getBoundingClientRect();
-    const cssW = Math.max(320, Math.floor(rect.width));
-    const cssH = 520;
+    const cssW = Math.max(280, Math.floor(rect.width));
+    const mobile = cssW < 480;
+    const cssH = mobile
+      ? Math.min(380, typeof window !== 'undefined' ? Math.floor(window.innerHeight * 0.5) : 380)
+      : 520;
     const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
     canvas.width = Math.floor(cssW * dpr);
     canvas.height = Math.floor(cssH * dpr);
@@ -120,13 +124,16 @@ export default function MapPage() {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, cssW, cssH);
 
-    // Layout
-    const padL = 56;
-    const padR = 18;
-    const padT = 18;
-    const padB = 44;
+    // Layout: меньше отступов на узком экране
+    const padL = mobile ? 40 : 56;
+    const padR = mobile ? 10 : 18;
+    const padT = mobile ? 14 : 18;
+    const padB = mobile ? 34 : 44;
     const w = cssW - padL - padR;
     const h = cssH - padT - padB;
+
+    const axisFont = mobile ? 14 : 12;
+    const labelFont = mobile ? 13 : 11;
 
     // Background
     ctx.fillStyle = '#0a0a0a';
@@ -174,21 +181,23 @@ export default function MapPage() {
     ctx.stroke();
 
     // Labels
-    ctx.fillStyle = 'rgba(255,255,255,0.70)';
-    ctx.font = '12px ui-sans-serif, system-ui, -apple-system';
-    ctx.fillText('Impact', 12, padT + 12);
-    ctx.fillText('Probability →', padL + w - 92, padT + h + 32);
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    ctx.font = `${axisFont}px ui-sans-serif, system-ui, -apple-system, sans-serif`;
+    ctx.fillText('Impact', 8, padT + axisFont);
+    const probText = mobile ? 'P →' : 'Probability →';
+    ctx.fillText(probText, padL + w - (mobile ? 36 : 92), padT + h + (mobile ? 24 : 32));
 
     // Ticks
-    ctx.fillStyle = 'rgba(255,255,255,0.55)';
+    ctx.fillStyle = 'rgba(255,255,255,0.7)';
+    ctx.font = `${axisFont}px ui-sans-serif, system-ui, -apple-system, sans-serif`;
     for (let i = 0; i <= 5; i++) {
       const tP = (maxP * i) / 5;
       const x = padL + (w * i) / 5;
-      ctx.fillText(String(Math.round(tP * 10) / 10), x - 6, padT + h + 18);
+      ctx.fillText(String(Math.round(tP * 10) / 10), x - (mobile ? 8 : 6), padT + h + (mobile ? 14 : 18));
 
       const tI = (maxI * (5 - i)) / 5;
       const y = padT + (h * i) / 5;
-      ctx.fillText(String(Math.round(tI * 10) / 10), 14, y + 4);
+      ctx.fillText(String(Math.round(tI * 10) / 10), 10, y + 4);
     }
 
     const mapped: DrawPoint[] = points.filtered.map((p) => {
@@ -225,18 +234,19 @@ export default function MapPage() {
       ctx.stroke();
     }
 
-    // Labels on points (risk codes)
+    // Labels on points (risk codes): на мобиле меньше подписей и крупнее шрифт
     if (showLabels) {
+      const maxShow = mobile ? Math.min(maxLabels, 14) : Math.min(120, maxLabels);
       const picks = [...mapped]
         .sort((a, b) => b.score - a.score)
-        .slice(0, Math.max(0, Math.min(120, maxLabels)));
+        .slice(0, Math.max(0, maxShow));
 
       for (const p of picks) {
         const text = String(p.risk_code || '').trim();
         if (!text) continue;
-        const tx = clamp(p.x + 8, padL + 4, padL + w - 40);
-        const ty = clamp(p.y - 10, padT + 10, padT + h - 10);
-        drawLabel(ctx, text, tx, ty);
+        const tx = clamp(p.x + (mobile ? 6 : 8), padL + 2, padL + w - (mobile ? 28 : 40));
+        const ty = clamp(p.y - (mobile ? 8 : 10), padT + 8, padT + h - 8);
+        drawLabel(ctx, text, tx, ty, labelFont);
       }
     }
 
@@ -268,16 +278,16 @@ export default function MapPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  function handleMove(e: React.MouseEvent) {
+  function findPointAt(clientX: number, clientY: number): DrawPoint | null {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas) return null;
     const rect = canvas.getBoundingClientRect();
-    const mx = e.clientX - rect.left;
-    const my = e.clientY - rect.top;
-
+    const mx = clientX - rect.left;
+    const my = clientY - rect.top;
     const pts = mappedRef.current;
     let best: DrawPoint | null = null;
     let bestD = Infinity;
+    const hitRadius = 20;
     for (const p of pts) {
       const dx = p.x - mx;
       const dy = p.y - my;
@@ -287,9 +297,23 @@ export default function MapPage() {
         best = p;
       }
     }
+    return best && bestD <= hitRadius * hitRadius ? best : null;
+  }
 
-    if (best && bestD <= 14 * 14) setHover(best);
-    else setHover(null);
+  function handleMove(e: React.MouseEvent) {
+    const best = findPointAt(e.clientX, e.clientY);
+    setHover(best);
+  }
+
+  function handleTouchStart(e: React.TouchEvent) {
+    const touch = e.targetTouches[0] || e.changedTouches[0];
+    if (!touch) return;
+    const best = findPointAt(touch.clientX, touch.clientY);
+    setHover(best);
+  }
+
+  function handleTouchEnd() {
+    setTimeout(() => setHover(null), 500);
   }
 
   const stats = useMemo(() => {
@@ -308,9 +332,12 @@ export default function MapPage() {
     <div className="min-h-screen" style={{ background: 'var(--background)' }}>
       <main className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-6 sm:px-6 sm:py-8">
         <header className="flex flex-col gap-1">
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Карта рисков</h1>
+          <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight text-slate-900">
+            <MapIcon className="h-7 w-7 text-[var(--periscope-primary)]" aria-hidden />
+            Карта рисков
+          </h1>
           <p className="text-sm text-slate-600">
-            Probability × Impact по последнему состоянию риска. Наведи мышь на точку, чтобы увидеть детали.
+            Probability × Impact по последнему состоянию. Наведите мышь или коснитесь точки — появится подсказка.
           </p>
         </header>
 
@@ -398,16 +425,19 @@ export default function MapPage() {
             <div className="border-b border-slate-200 px-6 py-4 text-sm text-slate-600">
               {loading ? 'Загрузка…' : 'Карта (Probability → / Impact ↑)'}
             </div>
-            <div className="p-4">
+            <div className="p-2 sm:p-4">
               <canvas
                 ref={canvasRef}
-                className="block w-full rounded-xl"
+                className="block w-full rounded-xl touch-none"
                 onMouseMove={handleMove}
                 onMouseLeave={() => setHover(null)}
+                onTouchStart={handleTouchStart}
+                onTouchEnd={handleTouchEnd}
+                onTouchCancel={handleTouchEnd}
               />
             </div>
             {hover ? (
-              <div className="pointer-events-none absolute left-6 top-16 max-w-[calc(100%-3rem)] rounded-xl border border-white/10 bg-black/85 px-3 py-2 text-sm text-white shadow-lg">
+              <div className="pointer-events-none absolute left-4 right-4 top-14 z-10 max-w-[calc(100%-2rem)] rounded-xl border border-white/20 bg-slate-900 px-3 py-2.5 text-sm text-white shadow-xl sm:left-6 sm:right-auto sm:max-w-md">
                 <div className="flex items-center gap-2">
                   <span
                     className="inline-block h-2 w-2 rounded-full"

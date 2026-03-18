@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Sparkles } from 'lucide-react';
 import type { AiResponse } from '@/lib/aiSchema';
 
 export default function AiPage() {
@@ -42,7 +43,10 @@ export default function AiPage() {
     <div className="min-h-screen" style={{ background: 'var(--background)' }}>
       <main className="mx-auto flex max-w-3xl flex-col gap-6 px-4 py-6 sm:px-6 sm:py-8">
         <header className="flex flex-col gap-1">
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">AI-анализ риска</h1>
+          <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight text-slate-900">
+            <Sparkles className="h-7 w-7 text-amber-500" aria-hidden />
+            AI-анализ риска
+          </h1>
           <p className="text-sm text-slate-600">
             Введите код риска — получите краткий AI-анализ и рекомендации (DeepSeek).
           </p>

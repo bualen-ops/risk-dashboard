@@ -2,15 +2,25 @@
 
 import Link from 'next/link';
 import { useState, useCallback, useEffect } from 'react';
+import {
+  LayoutList,
+  TrendingUp,
+  Map,
+  LineChart,
+  Sparkles,
+  MessageSquare,
+  LogOut,
+  Shield,
+} from 'lucide-react';
 
 const navLinks = [
-  { href: '/risks', label: 'Реестр' },
-  { href: '/key-risks', label: 'Ключевые риски' },
-  { href: '/map', label: 'Карта' },
-  { href: '/dynamics', label: 'Динамика' },
-  { href: '/ai', label: 'AI-анализ' },
-  { href: '/requests', label: 'Запросы' },
-  { href: '/logout', label: 'Выйти', border: true },
+  { href: '/risks', label: 'Реестр', Icon: LayoutList },
+  { href: '/key-risks', label: 'Ключевые риски', Icon: TrendingUp },
+  { href: '/map', label: 'Карта', Icon: Map },
+  { href: '/dynamics', label: 'Динамика', Icon: LineChart },
+  { href: '/ai', label: 'AI-анализ', Icon: Sparkles },
+  { href: '/requests', label: 'Запросы', Icon: MessageSquare },
+  { href: '/logout', label: 'Выйти', border: true, Icon: LogOut },
 ];
 
 export default function NavBar() {
@@ -33,22 +43,25 @@ export default function NavBar() {
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
           <Link
             href="/"
-            className="text-lg font-semibold text-white hover:text-white/95"
+            className="flex items-center gap-2 text-lg font-semibold text-white hover:text-white/95"
             onClick={closeMenu}
           >
-            Управление рисками
+            <Shield className="h-6 w-6 flex-shrink-0" aria-hidden />
+            <span className="hidden sm:inline">РИСКИ в КАРМАНЕ</span>
+            <span className="sm:hidden">Риски в кармане</span>
           </Link>
 
           {/* Desktop nav */}
           <nav className="hidden flex-wrap items-center gap-1 md:flex">
-            {navLinks.map(({ href, label, border }) => (
+            {navLinks.map(({ href, label, border, Icon }) => (
               <Link
                 key={href}
                 href={href}
-                className={`rounded-lg px-3 py-2 text-sm font-medium text-white/90 transition hover:bg-white/10 hover:text-white ${
+                className={`flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-white/90 transition hover:bg-white/10 hover:text-white ${
                   border ? 'ml-2 border border-white/30' : ''
                 }`}
               >
+                <Icon className="h-4 w-4 flex-shrink-0" aria-hidden />
                 {label}
               </Link>
             ))}
@@ -94,13 +107,14 @@ export default function NavBar() {
           }}
           onClick={(e) => e.stopPropagation()}
         >
-          {navLinks.map(({ href, label, border }) => (
+          {navLinks.map(({ href, label, Icon }) => (
             <Link
               key={href}
               href={href}
-              className="flex min-h-[48px] items-center rounded-xl px-4 py-3 text-base font-medium text-white/95 transition hover:bg-white/10 active:bg-white/15"
+              className="flex min-h-[48px] items-center gap-3 rounded-xl px-4 py-3 text-base font-medium text-white/95 transition hover:bg-white/10 active:bg-white/15"
               onClick={closeMenu}
             >
+              <Icon className="h-5 w-5 flex-shrink-0 opacity-90" aria-hidden />
               {label}
             </Link>
           ))}

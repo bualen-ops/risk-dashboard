@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Управление рисками — Dashboard",
-  description: "Веб‑дашборд для управления рисками проекта",
+  title: "РИСКИ в КАРМАНЕ",
+  description: "Веб‑дашборд: реестр рисков, карта, динамика, AI‑анализ, запросы риск‑менеджеру",
 };
 
 export const viewport: Viewport = {

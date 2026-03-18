@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo } from 'react';
+import { LogOut } from 'lucide-react';
 
 function getHost() {
   if (typeof window === 'undefined') return '';
@@ -22,7 +23,10 @@ export default function LogoutPage() {
   return (
     <div className="min-h-screen" style={{ background: 'var(--background)' }}>
       <main className="mx-auto flex max-w-xl flex-col gap-4 px-4 py-12 sm:px-6 sm:py-16">
-        <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Выход…</h1>
+        <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight text-slate-900">
+          <LogOut className="h-7 w-7 text-slate-500" aria-hidden />
+          Выход…
+        </h1>
         <p className="text-sm text-slate-600">
           Если браузер не спросит логин/пароль заново, открой сайт в режиме
           инкогнито или очисти сохранённые данные для этого домена.
