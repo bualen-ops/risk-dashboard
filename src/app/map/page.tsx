@@ -31,6 +31,8 @@ export default function MapPage() {
   const [q, setQ] = useState('');
   const [minScore, setMinScore] = useState<number>(0);
   const [hover, setHover] = useState<DrawPoint | null>(null);
+  const [showLabels, setShowLabels] = useState(true);
+  const [maxLabels, setMaxLabels] = useState(28);
 
   async function load() {
     setLoading(true);
@@ -80,6 +82,24 @@ export default function MapPage() {
     return { filtered, maxP, maxI };
   }, [items, minScore, q]);
 
+  function heatColor(score: number) {
+    if (score >= 16) return 'rgba(239,68,68,0.22)'; // red
+    if (score >= 9) return 'rgba(245,158,11,0.18)'; // amber
+    return 'rgba(16,185,129,0.14)'; // emerald
+  }
+
+  function drawLabel(ctx: CanvasRenderingContext2D, text: string, x: number, y: number) {
+    ctx.save();
+    ctx.font = '11px ui-sans-serif, system-ui, -apple-system';
+    ctx.textBaseline = 'middle';
+    ctx.lineWidth = 3.5;
+    ctx.strokeStyle = 'rgba(0,0,0,0.75)';
+    ctx.strokeText(text, x, y);
+    ctx.fillStyle = 'rgba(255,255,255,0.88)';
+    ctx.fillText(text, x, y);
+    ctx.restore();
+  }
+
   function draw() {
     const canvas = canvasRef.current;
     const wrap = wrapRef.current;
@@ -112,6 +132,22 @@ export default function MapPage() {
     ctx.fillStyle = '#0a0a0a';
     ctx.fillRect(0, 0, cssW, cssH);
 
+    // Heatmap cells (classic risk map)
+    const maxP = points.maxP || 1;
+    const maxI = points.maxI || 1;
+    for (let gx = 0; gx < 5; gx++) {
+      for (let gy = 0; gy < 5; gy++) {
+        // Cell center in "axis units"
+        const pCenter = (maxP * (gx + 0.5)) / 5;
+        const iCenter = (maxI * (gy + 0.5)) / 5;
+        const cellScore = pCenter * iCenter;
+        const x0 = padL + (w * gx) / 5;
+        const y0 = padT + (h * (4 - gy)) / 5;
+        ctx.fillStyle = heatColor(cellScore);
+        ctx.fillRect(x0, y0, w / 5, h / 5);
+      }
+    }
+
     // Grid
     ctx.strokeStyle = 'rgba(255,255,255,0.08)';
     ctx.lineWidth = 1;
@@ -142,9 +178,6 @@ export default function MapPage() {
     ctx.font = '12px ui-sans-serif, system-ui, -apple-system';
     ctx.fillText('Impact', 12, padT + 12);
     ctx.fillText('Probability →', padL + w - 92, padT + h + 32);
-
-    const maxP = points.maxP || 1;
-    const maxI = points.maxI || 1;
 
     // Ticks
     ctx.fillStyle = 'rgba(255,255,255,0.55)';
@@ -192,6 +225,21 @@ export default function MapPage() {
       ctx.stroke();
     }
 
+    // Labels on points (risk codes)
+    if (showLabels) {
+      const picks = [...mapped]
+        .sort((a, b) => b.score - a.score)
+        .slice(0, Math.max(0, Math.min(120, maxLabels)));
+
+      for (const p of picks) {
+        const text = String(p.risk_code || '').trim();
+        if (!text) continue;
+        const tx = clamp(p.x + 8, padL + 4, padL + w - 40);
+        const ty = clamp(p.y - 10, padT + 10, padT + h - 10);
+        drawLabel(ctx, text, tx, ty);
+      }
+    }
+
     // Hover highlight
     if (hover) {
       ctx.beginPath();
@@ -209,7 +257,7 @@ export default function MapPage() {
   useEffect(() => {
     mappedRef.current = draw() || [];
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [points.filtered, points.maxI, points.maxP, hover]);
+  }, [points.filtered, points.maxI, points.maxP, hover, showLabels, maxLabels]);
 
   useEffect(() => {
     function onResize() {
@@ -309,6 +357,29 @@ export default function MapPage() {
                 value={minScore}
                 onChange={(e) => setMinScore(Number(e.target.value || 0))}
               />
+            </div>
+            <div className="flex items-center gap-3 sm:pb-1">
+              <label className="inline-flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={showLabels}
+                  onChange={(e) => setShowLabels(e.target.checked)}
+                />
+                Показывать коды
+              </label>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-zinc-600 dark:text-zinc-400">до</span>
+                <input
+                  className="w-[76px] rounded-xl border border-zinc-200 bg-white px-2 py-2 text-sm outline-none focus:ring-2 focus:ring-zinc-300 dark:border-white/10 dark:bg-zinc-900 dark:focus:ring-white/20"
+                  type="number"
+                  min={0}
+                  max={120}
+                  step={1}
+                  value={maxLabels}
+                  onChange={(e) => setMaxLabels(Number(e.target.value || 0))}
+                  disabled={!showLabels}
+                />
+              </div>
             </div>
             <button
               className="rounded-xl bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 disabled:opacity-50 dark:bg-zinc-100 dark:text-black dark:hover:bg-white"
