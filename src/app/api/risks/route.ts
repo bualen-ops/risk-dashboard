@@ -6,7 +6,7 @@ export async function GET(req: Request) {
     const q = (url.searchParams.get('q') || '').trim();
 
     const baseUrl = (process.env.RISK_API_BASE_URL || '').trim();
-    const token = (process.env.RISK_API_TOKEN || '').trim();
+    const token = (process.env.RISK_API_TOKEN || 'risk_api_alenos_2026_03_18_k9f3w7x2p8m4').trim();
 
     if (!baseUrl) {
       return NextResponse.json(

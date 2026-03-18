@@ -1,20 +1,17 @@
 import { NextResponse } from 'next/server';
-import { mapResponseSchema } from '@/lib/mapSchema';
+import { aiResponseSchema } from '@/lib/aiSchema';
 
 function resolveUpstreamUrl() {
-  const explicit = (process.env.RISK_MAP_API_BASE_URL || '').trim();
+  const explicit = (process.env.RISK_AI_API_BASE_URL || '').trim();
   if (explicit) return explicit;
-
   const baseRisks = (process.env.RISK_API_BASE_URL || '').trim();
   if (!baseRisks) return '';
-
-  // Best-effort derive: .../risk-api/risks -> .../risk-api/map
   try {
     const u = new URL(baseRisks);
-    u.pathname = u.pathname.replace(/\/risks\/?$/, '/map');
+    u.pathname = u.pathname.replace(/\/risks\/?$/, '/ai');
     return u.toString();
   } catch {
-    return baseRisks.replace(/\/risks\/?$/, '/map');
+    return baseRisks.replace(/\/risks\/?$/, '/ai');
   }
 }
 
@@ -22,10 +19,12 @@ export async function GET(req: Request) {
   try {
     const baseUrl = resolveUpstreamUrl();
     const token = (process.env.RISK_API_TOKEN || 'risk_api_alenos_2026_03_18_k9f3w7x2p8m4').trim();
+    const url = new URL(req.url);
+    const code = (url.searchParams.get('code') || '').replace(/\s+/g, ' ').trim();
 
     if (!baseUrl) {
       return NextResponse.json(
-        { error: 'Missing env: RISK_MAP_API_BASE_URL (or RISK_API_BASE_URL)' },
+        { error: 'Missing env: RISK_AI_API_BASE_URL (or RISK_API_BASE_URL)' },
         { status: 500 },
       );
     }
@@ -35,14 +34,15 @@ export async function GET(req: Request) {
         { status: 500 },
       );
     }
-
-    const url = new URL(req.url);
-    const q = (url.searchParams.get('q') || '').trim();
-    const minScoreRaw = (url.searchParams.get('minScore') || '').trim();
+    if (!code) {
+      return NextResponse.json(
+        { error: 'Missing query param: code' },
+        { status: 400 },
+      );
+    }
 
     const upstream = new URL(baseUrl);
-    if (q) upstream.searchParams.set('q', q);
-    if (minScoreRaw) upstream.searchParams.set('minScore', minScoreRaw);
+    upstream.searchParams.set('code', code);
 
     const res = await fetch(upstream.toString(), {
       headers: { Authorization: `Bearer ${token}` },
@@ -52,13 +52,12 @@ export async function GET(req: Request) {
     const json = await res.json().catch(() => ({}));
     if (!res.ok) {
       return NextResponse.json(
-        { error: json?.error || `Upstream error (${res.status})`, upstream: upstream.toString() },
+        { error: json?.error || `Upstream error (${res.status})` },
         { status: 502 },
       );
     }
 
-    // Normalize shape to { items: [...] }
-    const parsed = mapResponseSchema.safeParse({ items: json?.items || [] });
+    const parsed = aiResponseSchema.safeParse(json);
     if (!parsed.success) {
       return NextResponse.json(
         { error: 'Bad upstream payload', issues: parsed.error.issues },
@@ -66,17 +65,9 @@ export async function GET(req: Request) {
       );
     }
 
-    const items = parsed.data.items.map((p) => ({
-      ...p,
-      score: typeof p.score === 'number' ? p.score : p.probability * p.impact,
-    }));
-
-    return NextResponse.json({ items });
-  } catch (e: any) {
-    return NextResponse.json(
-      { error: e?.message || String(e) },
-      { status: 500 },
-    );
+    return NextResponse.json(parsed.data);
+  } catch (e: unknown) {
+    const message = e instanceof Error ? e.message : String(e);
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
-

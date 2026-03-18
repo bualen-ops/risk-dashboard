@@ -21,7 +21,7 @@ function resolveUpstreamUrl() {
 export async function GET(req: Request) {
   try {
     const baseUrl = resolveUpstreamUrl();
-    const token = (process.env.RISK_API_TOKEN || '').trim();
+    const token = (process.env.RISK_API_TOKEN || 'risk_api_alenos_2026_03_18_k9f3w7x2p8m4').trim();
     const url = new URL(req.url);
     const code = (url.searchParams.get('code') || '').replace(/\s+/g, ' ').trim();
 
