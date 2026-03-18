@@ -41,6 +41,12 @@ export default function Home() {
           >
             Открыть «Запросы»
           </a>
+          <a
+            className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium hover:bg-zinc-50 dark:border-white/10 dark:bg-zinc-950 dark:hover:bg-white/5"
+            href="/risks"
+          >
+            Открыть «Реестр рисков»
+          </a>
         </section>
       </main>
     </div>
